@@ -7,7 +7,7 @@
 
 ## Public Chatbot URL
 
-**🔗 https://cloud.flowiseai.com/chatbot/REPLACE_WITH_YOUR_CHATBOT_ID**
+**  https://cloud.flowiseai.com/chatbot/d2e9e026-b37f-4d74-acc9-6da1ddd7b94d**
 
 > Set as "SCM Assistant" with welcome message: _"Ask me anything about our supplier network, SLAs, risks, or compliance policies."_
 
@@ -83,7 +83,6 @@ Conversational Retrieval QA Chain  ◄──── ChatOpenAI (gpt-4o-mini)
 ```
 
 **Retriever settings:** Top-K = 200, Similarity Search
-### Link : https://cloud.flowiseai.com/chatbot/d2e9e026-b37f-4d74-acc9-6da1ddd7b94d
 ---
 
 ## Sample Q&A (verbatim chatbot output)
