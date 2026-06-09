@@ -7,7 +7,7 @@
 
 ## Public Chatbot URL
 
-**  https://cloud.flowiseai.com/chatbot/d2e9e026-b37f-4d74-acc9-6da1ddd7b94d**
+**Public URL:    https://cloud.flowiseai.com/chatbot/d2e9e026-b37f-4d74-acc9-6da1ddd7b94d**
 
 > Set as "SCM Assistant" with welcome message: _"Ask me anything about our supplier network, SLAs, risks, or compliance policies."_
 
@@ -17,10 +17,31 @@
 
 | Component | Choice | Reason |
 |---|---|---|
-| LLM | `gpt-4o-mini` | Cost-effective, strong at structured reasoning |
-| Embeddings | `text-embedding-3-small` | Best accuracy/cost ratio for retrieval |
-| Vector Store | In-Memory (via Document Store) | Sufficient for 116-supplier dataset |
+| LLM | `gemini-3.1-flash-lite-preview` | Fast, cost-effective model suitable for RAG |
+| Embeddings | `gemini-embedding-001` | Semantic retrieval for CSV and policy documents |
+| Vector Store | In-Memory Vector Store | Suitable for assignment-scale dataset |
 | Framework | Flowise Cloud | No-code RAG orchestration |
+
+---
+
+## Final Chatflow Configuration
+
+| Setting | Value |
+|---|---|
+| Document Store | SCM_knowledge_base |
+| Documents | supplier_performance_data.csv + SupplyChain_Governance_Policy_v3.2.pdf |
+| CSV Chunking | 1000 size / 200 overlap |
+| PDF Chunking | 1000 size / 200 overlap |
+| Splitter | Recursive Character Text Splitter |
+| Embeddings | gemini-embedding-001 |
+| Vector Store | In-Memory Vector Store |
+| Retrieval Method | Similarity Search |
+| Top-K | 200 |
+| LLM | gemini-3.1-flash-lite-preview |
+| Temperature | 0.01 |
+| Memory | Buffer Memory |
+| Multi Query Retriever | Tested but removed due to lower retrieval quality |
+| Source Documents | Enabled |
 
 ---
 
@@ -207,10 +228,14 @@ scm-assistant-bot/
 ├── scm_assistant.json        # Exported Flowise chatflow
 ├── README.md                 # This file
 ├── .gitignore                # Excludes .env and API keys
-└── screenshots/              # Step-by-step process screenshots
-    ├── 01_document_store_created.png
-    ├── 02_csv_loaded_config_a.png
-    └── ...
+└── screenshots/
+        ├── Config-a/
+        │   ├── 01_document_store_created.png
+        │   ├── 02_csv_loaded_config_a.png
+        │   ├── ...
+        │   └── 11_q5_answer.png
+        └── Config-b/
+        └── 04_config_b_experiment.png
 ```
 
 ---
