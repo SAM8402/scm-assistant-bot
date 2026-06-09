@@ -70,16 +70,63 @@
 ## Chatflow Architecture
 
 ```
-Document Store (CSV + PDF, Config A)
-        │
-        ▼
-Document Store Retriever  ──────────────────────────────────┐
-        │                                                     │
-        ▼                                                     ▼
-Conversational Retrieval QA Chain  ◄──── ChatOpenAI (gpt-4o-mini)
-        │
-        ▼
-   Chat Response
+                         SCM Assistant RAG Chatflow Architecture
+
+
+                         ┌──────────────────────────┐
+                         │      Document Store       │
+                         │    SCM_knowledge_base     │
+                         │                           │
+                         │  - supplier_performance   │
+                         │    data.csv               │
+                         │  - Supply Chain           │
+                         │    Governance Policy PDF  │
+                         └─────────────┬────────────┘
+                                       │
+                                       ▼
+                         ┌──────────────────────────┐
+                         │  Gemini Embedding Model   │
+                         │   gemini-embedding-001    │
+                         │                           │
+                         │ Task: RETRIEVAL_DOCUMENT  │
+                         └─────────────┬────────────┘
+                                       │
+                                       ▼
+                         ┌──────────────────────────┐
+                         │  In-Memory Vector Store   │
+                         │                           │
+                         │ Top K Retrieval: 200      │
+                         │ Semantic Similarity       │
+                         └─────────────┬────────────┘
+                                       │
+                 ┌─────────────────────┴───────────────────┐
+                 │                                         │
+                 ▼                                         ▼
+      ┌────────────────────┐                 ┌─────────────────────┐
+      │   Gemini Chat LLM   │                 │    Buffer Memory    │
+      │                     │                 │                     │
+      │ gemini-3.1-flash    │                 │ Conversation        │
+      │ Temperature: 0.01   │                 │ History Storage     │
+      └──────────┬─────────┘                 └──────────┬──────────┘
+                 │                                      │
+                 └───────────────┬──────────────────────┘
+                                 ▼
+                  ┌────────────────────────────────┐
+                  │ Conversational Retrieval QA     │
+                  │              Chain              │
+                  │                                 │
+                  │ - Uses retrieved context        │
+                  │ - Applies QA Rephrase Prompt    │
+                  │ - Applies Response Prompt       │
+                  │ - Uses conversation memory      │
+                  │ - Returns source documents      │
+                  └────────────────────────────────┘
+                                  │
+                                  ▼
+                        ┌─────────────────┐
+                        │   SCM Assistant  │
+                        │  Final Response  │
+                        └─────────────────┘
 ```
 
 **Retriever settings:** Top-K = 200, Similarity Search
@@ -89,32 +136,35 @@ Conversational Retrieval QA Chain  ◄──── ChatOpenAI (gpt-4o-mini)
 
 ### Q1: Which Tier-3 suppliers have an active disruption flag, and what response level applies per policy?
 
-> 11 Tier-3 suppliers have active disruption flags: **Dravex Components India, Plataforma Metales SA, Maghreb Castworks, Helios Pack Greece, Cerromax Mineria, Orinoco Pack SAPI, Quetzal Textiles, Sibertek Molding, Archipelago PCB Corp, Varna Electronics EAD, Deltaforge Vietnam**. All are High Risk with an active flag → **Level 3 Activate** per Policy §9 (CPO escalation + alternate supplier at minimum 40% volume within 10 business days + safety stock adjusted +50% + full RCA within 15 business days).
-
+<!-- > 11 Tier-3 suppliers have active disruption flags: **Dravex Components India, Plataforma Metales SA, Maghreb Castworks, Helios Pack Greece, Cerromax Mineria, Orinoco Pack SAPI, Quetzal Textiles, Sibertek Molding, Archipelago PCB Corp, Varna Electronics EAD, Deltaforge Vietnam**. All are High Risk with an active flag → **Level 3 Activate** per Policy §9 (CPO escalation + alternate supplier at minimum 40% volume within 10 business days + safety stock adjusted +50% + full RCA within 15 business days). -->
+![Q1 Answer](screenshots/Config-a/07_q1_answer.png)
 ---
 
 ### Q2: Which suppliers qualify for the annual Volume Rebate Program and how many are there?
 
-> **19 suppliers** qualify: Borealis Composites, Crestline Chemical Supply, Fenwick Alloy Solutions, Hanguk Circuit Works, Hokkaido Alloy Tech, Krauss-Polymex GmbH, Lakeshore Components, Lumivex Semiconductor NL, Maplewood Polymer Corp, Norbec Alloy Works, Nordloom Finland Oy, Orrentek Precision Mfg, Ostwind Composites AG, PrecisionForge Taiyuan, Solveig Eco Packaging, Straits Packaging Hub, Tasman Circuit Boards, Toreval Electronics, Valdoro Special Alloys. Criteria (Policy §4.2): Tier-1 + OTD ≥ 93% + Defect Rate < 0.5% + Sustainability Score ≥ 85 for a full calendar year. Rebate = 2.5% of total annual invoice value, assessed each January.
-
+<!-- > **19 suppliers** qualify: Borealis Composites, Crestline Chemical Supply, Fenwick Alloy Solutions, Hanguk Circuit Works, Hokkaido Alloy Tech, Krauss-Polymex GmbH, Lakeshore Components, Lumivex Semiconductor NL, Maplewood Polymer Corp, Norbec Alloy Works, Nordloom Finland Oy, Orrentek Precision Mfg, Ostwind Composites AG, PrecisionForge Taiyuan, Solveig Eco Packaging, Straits Packaging Hub, Tasman Circuit Boards, Toreval Electronics, Valdoro Special Alloys. Criteria (Policy §4.2): Tier-1 + OTD ≥ 93% + Defect Rate < 0.5% + Sustainability Score ≥ 85 for a full calendar year. Rebate = 2.5% of total annual invoice value, assessed each January. -->
+![Q2 Answer](screenshots/Config-a/08_q2_answer.png)
 ---
 
 ### Q3: Which region has the highest total PO value, and does it breach the concentration limit?
 
-> **EMEA at $193,987,179.91** — approximately **48.5%** of total spend ($399,563,494.10). This **breaches** the 45% regional concentration cap (Policy §5.3), requiring a Diversification Plan to be submitted within 60 days.
+<!-- > **EMEA at $193,987,179.91** — approximately **48.5%** of total spend ($399,563,494.10). This **breaches** the 45% regional concentration cap (Policy §5.3), requiring a Diversification Plan to be submitted within 60 days. -->
 
+![Q3 Answer](screenshots/Config-a/09_q3_answer.png)
 ---
 
 ### Q4: Which suppliers are on Supplier Watch List (SWL) status and what does it restrict?
 
-> **11 suppliers** (Compliance Score < 60) are on SWL: Deltaforge Vietnam, Maghreb Castworks, Helios Pack Greece, Cerromax Mineria, Orinoco Pack SAPI, Varna Electronics EAD, Quetzal Textiles, Plataforma Metales SA, Archipelago PCB Corp, Dravex Components India, Sibertek Molding. **SWL restricts new PO issuance to 20% of prior quarter volume** (Policy §3.4).
+<!-- > **11 suppliers** (Compliance Score < 60) are on SWL: Deltaforge Vietnam, Maghreb Castworks, Helios Pack Greece, Cerromax Mineria, Orinoco Pack SAPI, Varna Electronics EAD, Quetzal Textiles, Plataforma Metales SA, Archipelago PCB Corp, Dravex Components India, Sibertek Molding. **SWL restricts new PO issuance to 20% of prior quarter volume** (Policy §3.4). -->
+
+![Q4 Answer](screenshots/Config-a/10_q4_answer.png)
 
 ---
 
 ### Q5: Which product category has the highest average defect rate and does it exceed the Tier-2 limit?
 
 <!-- > **Mechanical Components** — average **2.12%** across 360 POs. This is **below the Tier-2 ceiling of 2.50%** (Policy §3.2), so no breach — but approaching the limit. -->
-![Q5 Answer](Config-a/11_q5_answer.png)
+![Q5 Answer](screenshots/Config-a/11_q5_answer.png)
 
 ---
 
@@ -164,5 +214,3 @@ scm-assistant-bot/
 ```
 
 ---
-
-*Trinamix Inc · Talent Acquisition · Ref: TX-JrAI-003**
